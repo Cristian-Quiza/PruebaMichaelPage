@@ -1,0 +1,45 @@
+{
+	"info": {
+		"_postman_id": "e8439465-f687-423d-8a62-c802be3a8210",
+		"name": "EcommerceCarvajal",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "28585375"
+	},
+	"item": [
+		{
+			"name": "Productos",
+			"item": [
+				{
+					"name": "http://localhost:8080/rest/crudProducto/listaProductoPorNombreLike/todos",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": "http://localhost:8080/rest/crudProducto/listaProductoPorNombreLike/todos"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Usuarios",
+			"item": [
+				{
+					"name": "http://localhost:8080/rest/util/listaNombres",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/rest/util/listaNombres"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

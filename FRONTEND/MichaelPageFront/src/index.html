@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>dawii-sesion11frontendfinalizado</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.css" />
+  
+  <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+ 
+  <script type="text/javascript">
+
+    $(document).ready(function() {
+  
+      //Se añade los clientes a la tabla
+      $.getJSON("listaSeleccion",{}, function (data){
+        $.each(data, function(index, item){
+          $('#id_table_boleta_body').append("<tr><td>" +item.idProducto + "</td><td>" +item.nombre + "</td><td>" +item.precio + "</td><td>" +item.cantidad + "</td><td>" +item.totalParcial + "</td><td><button type='button' onclick='f_elimina_seleccion(" + item.idProducto +");' class='btn btn-default' aria-label='Left Align' ><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></button></td></tr>");                     
+        });
+      });
+      
+    });
+  
+    //Al pulsar el botón cliente
+    $("#id_btnCliente").click(function (){
+      muestraCliente();
+      $("#idBuscaCliente").modal("show");
+    });
+  
+    //Al pulsar el botón producto
+    $("#id_btnProducto").click(function (){
+      muestraProducto();
+      $("#idBuscaProducto").modal("show");
+    });
+    
+    //Al escribir en la caja de texto del cliente
+    $("#id_txtCliente").keyup( function (e){
+      muestraCliente();
+    });
+    
+    //Al escribir en la caja de texto del cliente
+    $("#id_txtProducto").keyup( function (e){
+      muestraProducto();
+    });
+    
+    //Se anula el enter
+    $(document).on("keypress", "form", function(event) { 
+        return event.keyCode != 13;
+    });
+  
+    
+    //Al pulsar el botón agregar
+    $("#id_btnAgregar").click(function (){
+      var var_pro = $("#id_producto_id").val();
+      var var_can = $("#id_producto_cantidad").val();
+      var var_stk = $("#id_producto_stock").val();
+      
+      //Validar duplicados
+      var yaExiste = false;
+      $("#id_table_boleta_body tr").each(function() {
+        if($(this).find('td:eq(0)').html() == var_pro){
+          yaExiste = true;
+        }
+      });
+      
+      if ( var_pro == '-1' ){
+        $("#idMensajeTexto").text("Seleccione un Producto");
+        $("#idMensaje").modal("show");
+      }else if ( var_can == '' ){
+        $("#idMensajeTexto").text("Agrege una cantidad");
+        $("#idMensaje").modal("show");
+      }else if ( $.isNumeric( var_can ) == false ){
+        $("#idMensajeTexto").text("La cantidad debe ser númerico");
+        $("#idMensaje").modal("show");
+      }else if (parseInt(var_can) <= 0 ){
+        $("#idMensajeTexto").text("La cantidad debe ser postivo");
+        $("#idMensaje").modal("show");
+      }else if (parseInt(var_can)> parseInt(var_stk)){
+        $("#idMensajeTexto").text("La cantidad no puede ser superior al Stock");
+        $("#idMensaje").modal("show");
+      }else if (yaExiste){
+        $("#idMensajeTexto").text("Existe el producto elegido");
+        $("#idMensaje").modal("show");
+      }else{
+        
+        var var_nom = $("#id_producto_nombre").val();
+        var var_pre = $("#id_producto_precio").val();
+            
+        //limpiar la tabla
+        $("#id_table_boleta_body").empty();
+          
+        var jsonParam = {"idProducto":var_pro,"nombre":var_nom,"precio":var_pre,"cantidad":var_can};
+        
+        $.ajax({
+          url:  'agregarSeleccion',
+          type: 'POST',
+          dataType:'json',
+          data: jsonParam,
+          success:function(data){
+            console.log(data);
+            if(data != null){
+              $.each(data, function(index, item){
+                $('#id_table_boleta_body').append("<tr><td>" +item.idProducto + "</td><td>" +item.nombre + "</td><td>" +item.precio + "</td><td>" +item.cantidad + "</td><td>" +item.totalParcial + "</td><td><button type='button' onclick='f_elimina_seleccion(" + item.idProducto +");' class='btn btn-default' aria-label='Left Align' ><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></button></td></tr>");
+              });
+              
+            }else
+              swal("Error al agregar la selección del producto","","error");
+              return false;
+            },
+          error: function (jqXhr) { 
+            swal("Error en la conexión","","error");
+          }
+         });	
+           
+          
+        //limpia las cajas de texto
+        $("#id_producto_id").val("-1");
+        $("#id_producto_nombre").val("");
+        $("#id_producto_precio").val("");
+        $("#id_producto_stock").val("");
+        $("#id_producto_cantidad").val("");
+      }
+    });
+    
+    
+    //Al pulsar el botón agregar
+    $("#id_btnRegistrar").click(function (){
+      var var_cli = $("#id_cliente_id").val();
+      var var_ape = $("#id_cliente_apellido").val();
+      var var_nom = $("#id_cliente_nombre").val();
+      var var_nom_com =  var_nom + ' ' + var_ape;
+      
+      var var_count = 0;
+      $("#id_table_boleta_body tr").each(function() {
+        var_count = var_count + 1;
+      });
+      
+      if (var_cli == "-1"){
+        $("#idMensajeTexto").text("Seleccione un cliente");
+        $("#idMensaje").modal("show");
+      }else if (var_count < 1){
+        $("#idMensajeTexto").text("Seleccione un producto");
+        $("#idMensaje").modal("show");
+      }else{
+  
+        var jsonParam = {"idCliente":var_cli,"nombre":var_nom_com};
+  
+        $.ajax({
+          url:  'registraBoleta',
+          type: 'POST',
+          dataType:'json',
+          data: jsonParam,
+          success:function(data){
+            if(data.texto != "-1"){
+              console.log(data.texto);
+              $("#idMensajeTexto").html(data.texto);
+              $("#idMensaje").modal("show");
+              $("#id_table_boleta_body").empty();
+              $("#id_cliente_id").val("-1");
+              $("#id_cliente_nombre").val("");
+              $("#id_cliente_apellido").val("");
+            }else
+              swal("Error al agregar la Boleta","","error");
+              return false;
+            },
+          error: function (jqXhr) { 
+            swal("Error en la conexión","","error");
+          }
+         });	
+           
+      }
+    });
+    
+    
+    function muestraCliente(){
+      var var_cliente = $("#id_txtCliente").val();
+  
+      //limpiar la tabla
+      $("#id_table_cliente tbody").empty();
+      
+      //Se añade los clientes a la tabla
+      $.getJSON("cargaCliente",{"filtro":var_cliente}, function (data){
+        $.each(data, function(index, item){
+          $('#id_table_cliente').append("<tr><td>" +item.idCliente + "</td><td>" +item.nombre + "</td><td>" +item.apellido + "</td><td><button type='button' class='btn btn-default' aria-label='Left Align' onclick=\"f_seleccione_cliente('"+ item.idCliente+"','"+ item.nombre+"','"+ item.apellido+"');\" ><span class='glyphicon glyphicon-ok' aria-hidden='true'></span></button></td></tr>");
+        });
+      });
+    }
+  
+    function muestraProducto(){
+      var var_producto = $("#id_txtProducto").val();
+  
+      //limpiar la tabla
+      $("#id_table_producto tbody").empty();
+      
+      //Se añade los clientes a la tabla
+      $.getJSON("cargaProducto",{"filtro":var_producto}, function (data){
+        $.each(data, function(index, item){
+          $('#id_table_producto').append("<tr><td>" +item.idProducto + "</td><td>" +item.nombre + "</td><td>" +item.precio + "</td><td>" +item.stock + "</td><td><button type='button' class='btn btn-default' aria-label='Left Align' onclick=\"f_seleccione_producto('"+ item.idProducto+"','"+ item.nombre+"','"+ item.precio+"','"+ item.stock+"');\" ><span class='glyphicon glyphicon-ok' aria-hidden='true'></span></button></td></tr>");
+        });
+      });
+    }
+  
+    //Al pulsar selecciona cliente
+    function f_seleccione_cliente(id,nombre,apellido){
+      $("#id_cliente_id").val(id);
+      $("#id_cliente_nombre").val(nombre);
+      $("#id_cliente_apellido").val(apellido);
+      $("#idBuscaCliente").modal("hide");
+    }
+    
+    //Al pulsar selecciona producto
+    function f_seleccione_producto(id,nombre,precio,stock){
+      $("#id_producto_id").val(id);
+      $("#id_producto_nombre").val(nombre);
+      $("#id_producto_precio").val(precio);
+      $("#id_producto_stock").val(stock);
+      $("#idBuscaProducto").modal("hide");
+    }
+    
+    //Al pulsar el botón eliminar
+    function f_elimina_seleccion(id){	
+      //limpiar la tabla
+      $("#id_table_boleta_body").empty();
+        
+      //Se añade los clientes a la tabla
+      $.getJSON("eliminaSeleccion",{"idProducto":id}, function (data){
+        $.each(data, function(index, item){
+          $('#id_table_boleta_body').append("<tr><td>" +item.idProducto + "</td><td>" +item.nombre + "</td><td>" +item.precio + "</td><td>" +item.cantidad + "</td><td>" +item.totalParcial + "</td><td><button type='button' onclick='f_elimina_seleccion(" + item.idProducto +");' class='btn btn-default' aria-label='Left Align' ><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></button></td><tr>");
+        });
+      });
+  
+      //limpia las cajas de texto
+      $("#id_producto_id").val("-1");
+      $("#id_producto_nombre").val("");
+      $("#id_producto_precio").val("");
+      $("#id_producto_stock").val("");
+      $("#id_producto_cantidad").val("");
+    }
+      
+    //Solo numeros en caja de texto
+    function validarSoloNumerosEnteros(e) { // 1
+      tecla = (document.all) ? e.keyCode : e.which; // 2
+      if (tecla == 8)	return true; // 3
+      patron = /[0-9]/;// Solo acepta números
+      te = String.fromCharCode(tecla); // 5
+      return patron.test(te); // 6
+    }
+    
+  
+    
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
